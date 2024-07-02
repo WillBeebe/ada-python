@@ -111,3 +111,23 @@
         description: Artifact data, usually the file contents.
     required:
       - data
+
+- name: send_email
+  description: Help drafting email and send the email
+  parameter_schema:
+    type: object
+    properties:
+      email:
+        type: string
+        description: receipient email address
+      subject:
+        type: string
+        description: Email subject
+      content:
+        type: string
+        description: Email content with html formatted
+
+    required:
+      - email
+      - subject
+      - content
