@@ -1,6 +1,6 @@
 [tool.poetry]
-name = "ada"
-version = "0.1.0"
+name = "ada-python"
+version = "0.2.0"
 description = ""
 authors = ["Will Beebe"]
 packages = [
@@ -10,7 +10,6 @@ packages = [
   {include = "storage", from="src"},
   {include = "data", from="."}
 ]
-# include = ["data/*.yaml"]
 
 [tool.poetry.dependencies]
 python = "^3.11"
