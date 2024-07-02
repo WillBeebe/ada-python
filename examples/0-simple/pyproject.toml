@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "ada-example-0-simple"
+version = "0.1.0"
+description = ""
+authors = ["Will Beebe"]
+packages = [
+  {include = "*", from="src"},
+]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+ada = "^0.1.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "^8.1.1"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+select = ["E", "F", "W", "I001"]
+ignore = ["E501", "F541"]
+fixable = ["W", "I001"]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
