@@ -1,3 +1,5 @@
+from typing import Any
+
 from pydantic import BaseModel
 
 
@@ -8,7 +10,7 @@ class UsageStats(BaseModel):
 
 class PromptResponse(BaseModel):
     content: str
-    raw_response: any
+    raw_response: Any
     error: object
     usage: UsageStats
 
