@@ -1,9 +1,10 @@
 
 from opentelemetry import metrics
 from opentelemetry.exporter.prometheus import PrometheusMetricReader
-from opentelemetry.sdk.metrics import Counter, MeterProvider, ObservableGauge
-from opentelemetry.sdk.metrics.export import InMemoryMetricReader
-from prometheus_client import start_http_server
+from opentelemetry.sdk.metrics import MeterProvider
+
+# from opentelemetry.sdk.metrics.export import InMemoryMetricReader
+# from prometheus_client import start_http_server
 
 prometheus_exporter = PrometheusMetricReader()
 metrics.set_meter_provider(MeterProvider(metric_readers=[prometheus_exporter]))

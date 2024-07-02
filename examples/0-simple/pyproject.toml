@@ -9,7 +9,8 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.11"
-ada = "^0.1.0"
+# ada-python = "^0.2.0"
+ada-python = {path = "../../", develop = true}
 
 [tool.poetry.dev-dependencies]
 pytest = "^8.1.1"

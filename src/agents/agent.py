@@ -2,7 +2,8 @@ import logging
 
 from abcs.llm import LLM
 from abcs.models import PromptResponse
-from metrics.main import call_tool_counter, generate_text_counter
+
+# from metrics.main import call_tool_counter, generate_text_counter
 from storage.storage_manager import StorageManager
 from tools.tool_manager import ToolManager
 
@@ -32,7 +33,7 @@ class Agent(LLM):
         return []
 
     def generate_text(self, prompt: str) -> PromptResponse:
-        generate_text_counter.add(1)
+        # generate_text_counter.add(1)
         logger.debug("Generating text for prompt: '%s'", prompt)
         past_messages = []
         if self.storage_manager is not None:
@@ -41,11 +42,11 @@ class Agent(LLM):
             #     past_messages = self.storage_manager.get_past_messages_callback()
             # else:
             past_messages = self.storage_manager.get_past_messages()
-            logger.info("Fetched %d past messages", len(past_messages))
+            logger.debug("Fetched %d past messages", len(past_messages))
         # todo: push down to core llm class, leave for now while scripting
 
         try:
-            logger.info("passing %d past messages", len(past_messages))
+            logger.debug("passing %d past messages", len(past_messages))
             if self.storage_manager is not None:
                 self.storage_manager.store_message("user", prompt)
             response = self.client.generate_text(prompt, past_messages, self.tools)
@@ -56,17 +57,18 @@ class Agent(LLM):
 
         if self.storage_manager is not None:
             try:
-                translated = self.translate_response(response)
-                self.storage_manager.store_message("assistant", translated.content)
+                # translated = self._translate_response(response)
+                self.storage_manager.store_message("assistant", response.content)
             except Exception as e:
                 logger.error("Error storing messages: %s", e, exc_info=True)
                 raise e
 
-        logger.debug("Generated response: %s", response)
-        return self.translate_response(response)
+        # logger.debug("Generated response: %s", response)
+        # return self._translate_response(response)
+        return response
 
     def call_tool(self, past_messages, tool_msg, tools) -> str:
-        call_tool_counter.add(1)
+        # call_tool_counter.add(1)
         logger.debug("Calling tool with message: %s", tool_msg)
         try:
             if len(tools) == 0:
@@ -79,10 +81,11 @@ class Agent(LLM):
             logger.error("Error calling tool: %s", e, exc_info=True)
             raise e
 
-    def translate_response(self, response) -> PromptResponse:
-        try:
-            translated_response = self.client.translate_response(response)
-            return translated_response
-        except Exception as e:
-            logger.error("Error translating response: %s", e, exc_info=True)
-            raise e
+    def _translate_response(self, response) -> PromptResponse:
+        pass
+    #     try:
+    #         translated_response = self.client._translate_response(response)
+    #         return translated_response
+    #     except Exception as e:
+    #         logger.error("Error translating response: %s", e, exc_info=True)
+    #         raise e

@@ -132,6 +132,7 @@ class AnthropicLLM(LLM):
                     content = response.content[0].text
             return PromptResponse(
                 content=content,
+                raw_response=response,
                 error={},
                 usage=UsageStats(
                     input_tokens=response.usage.input_tokens,

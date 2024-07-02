@@ -1,13 +1,14 @@
 [tool.poetry]
 name = "ada-python"
-version = "0.2.1"
-description = ""
+version = "0.2.2"
+description = "Ada, making LLMs easier to work with."
 authors = ["Will Beebe"]
 packages = [
   {include = "abcs", from="src"},
   {include = "agents", from="src"},
   {include = "tools", from="src"},
   {include = "storage", from="src"},
+  # {include = "metrics", from="src"},
   {include = "data", from="."}
 ]
 
@@ -23,6 +24,7 @@ groq = "^0.9.0"
 yfinance = "^0.2.38"
 openai-multi-tool-use-parallel-patch = "^0.2.0"
 ollama = "^0.2.1"
+neo4j = "^5.22.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^8.1.1"

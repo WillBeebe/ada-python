@@ -1,6 +1,9 @@
-from ada.abcs import AnthropicLLM
-from ada.agents import Ada
+from abcs.anthropic import AnthropicLLM
+from agents.ada import Ada
 
 agent = Ada(client=AnthropicLLM())
-response = agent.generate_text("Name five fruit that start with the letter a.")
+prompt = "Name five fruit that start with the letter a."
+
+print(prompt)
+response = agent.generate_text(prompt)
 print(response.content)
