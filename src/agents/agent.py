@@ -63,7 +63,7 @@ class Agent(LLM):
                 raise e
 
         logger.debug("Generated response: %s", response)
-        return response
+        return self.translate_response(response)
 
     def call_tool(self, past_messages, tool_msg, tools) -> str:
         call_tool_counter.add(1)

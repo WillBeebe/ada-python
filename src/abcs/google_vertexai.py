@@ -15,6 +15,7 @@ from vertexai.generative_models import (
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# work in progress
 # https://cloud.google.com/vertex-ai/generative-ai/docs/prompt-gallery/samples/chat_animal_facts_8
 class VertexAILLM(LLM):
     def __init__(
@@ -37,17 +38,6 @@ class VertexAILLM(LLM):
             system_prompt=system_prompt,
             provider="vertexai",
         )
-
-        # self.tools = json.load(open(tools_file))
-        # self.weather_tool = Tool(
-        #     function_declarations=[
-        #         FunctionDeclaration(
-        #             name="get_current_weather",
-        #             description="Get the current weather in a given location",
-        #             parameters=self.tools,
-        #         )
-        #     ]
-        # )
 
     def take_tool_action(self, tool_msg: Dict[str, Any]) -> Any:
         if not self.tool_manager:
@@ -103,7 +93,7 @@ class VertexAILLM(LLM):
                     tools
                 )
 
-            return self.translate_response(response)
+            return self._translate_response(response)
         except Exception as e:
             logger.exception(f"An error occurred while prompting Vertex AI: {e}")
             raise e
@@ -136,11 +126,12 @@ class VertexAILLM(LLM):
 
         return self.translate_response(response)
 
-    def translate_response(self, response) -> PromptResponse:
+    def _translate_response(self, response) -> PromptResponse:
         try:
             selected_msg = response.candidates[0]
             return PromptResponse(
                 content=selected_msg.content.parts[0].text,
+                raw_response=response,
                 error={},
                 usage=UsageStats(
                     input_tokens=response.usage['input_tokens'],

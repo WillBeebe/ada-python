@@ -19,7 +19,6 @@ openai = "^1.35.3"
 anthropic = "^0.29.0"
 requests = "^2.31.0"
 cohere = "^5.5.8"
-perplexityai = {git = "https://github.com/nathanrchn/perplexityai.git"}
 websocket = "^0.2.1"
 groq = "^0.9.0"
 yfinance = "^0.2.38"

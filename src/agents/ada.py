@@ -17,7 +17,7 @@ SYSTEM_PROMPT = 'prompts/ada.md'
 class Ada(Agent):
     def __init__(self, client: LLM, storage_manager: any = None):
         tool_manager = ToolManager()
-        if client.model != "llama3:8b":
+        if client.provider != "ollama":
           tool_manager.register_tool("run_ada_command", run_ada_command)
           tool_manager.register_tool("repo_get_structure", repo_get_structure)
           tool_manager.register_tool("get_weather", get_weather)

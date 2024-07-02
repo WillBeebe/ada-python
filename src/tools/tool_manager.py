@@ -3,7 +3,6 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# todo: improve tool manager
 class ToolManager:
     def __init__(self):
         self._tools = {}  # Dictionary to store registered tools

@@ -1,39 +1,3 @@
-- name: generate_video_title
-  description: Generate a title for a YouTube video
-  parameter_schema:
-    type: object
-    properties:
-      topic:
-        type: string
-        description: The main topic or subject of the video
-      keywords:
-        type: array
-        items:
-          type: string
-        description: Related keywords for the video
-    required:
-      - topic
-      - keywords
-
-- name: orc_ask_agent
-  description: Asks other agents for answwers
-  parameter_schema:
-    type: object
-    properties:
-      prompt:
-        type: string
-        description: The prompt to ask the other agent.
-      agent_type:
-        type: string
-        description: The agents types available to help. They can help with news queries, questions about stock prices, and questions about the current weather. These enums are the only ones you can return.
-        enum:
-          - news
-          - stocks
-          - weather
-    required:
-      - prompt
-      - agent
-
 - name: send_email
   description: Help drafting email and send the email
   parameter_schema:
@@ -166,21 +130,6 @@
     properties: {}
     required: []
 
-# - name: update_file
-#   description: "Takes file contents and path as an argument and can update a file with them."
-#   parameter_schema:
-#     type: object
-#     properties:
-#       path:
-#         type: string
-#         description: The full path of the file to update, including the project directory.
-#       content:
-#         type: string
-#         description: The contents of the file to update
-#     required:
-#       - path
-#       - content
-
 - name: file_write
   description: Writes a file to disk.
   parameter_schema:
@@ -308,18 +257,6 @@
     required:
       - directory
 
-# eventually
-# - name: install_npm_package
-#   description: Install an npm package
-#   parameter_schema:
-#     type: object
-#     properties:
-#       directory:
-#         type: string
-#         description: The name of the directory to create
-#     required:
-#       - directory
-
 - name: run_npx_command
   description: Run a npx command in a given directory.
   parameter_schema:
@@ -427,63 +364,3 @@
         description: Artifact data, usually the file contents.
     required:
       - data
-- name: web_browse
-  description: >
-    Retrieves the content of a specified web page as raw text. This tool is useful for
-    gathering detailed information from a known URL. It can be used to:
-    - Read articles or blog posts
-    - Analyze the content of specific web pages
-    - Extract information from documentation or reference pages
-    - Verify information claimed to be on a particular webpage
-    Note: This tool does not render JavaScript or handle dynamic content. It returns
-    the static HTML content of the page, converted to plain text. Be aware that some
-    websites may block automated access, potentially resulting in incomplete or
-    error responses.
-  parameter_schema:
-    type: object
-    properties:
-      url:
-        type: string
-        description: The full URL of the web page to visit, including the protocol (e.g., "https://www.example.com").
-    required:
-      - url
-
-- name: web_search
-  description: >
-    Performs a web search using the provided query and returns relevant results. This tool
-    is designed to find information across the internet based on keywords or questions.
-    It's particularly useful for:
-    - Gathering general information on a topic
-    - Finding recent news or updates
-    - Discovering multiple perspectives on a subject
-    - Locating specific facts or answers to questions
-    The search results typically include titles, snippets, and URLs of relevant web pages.
-    Use this tool when you need broad information or don't have a specific URL in mind.
-    For focused research, consider using the results to identify specific URLs, then use
-    the web_browse tool to gather more detailed content from those pages.
-  parameter_schema:
-    type: object
-    properties:
-      query:
-        type: string
-        description: The search query string. This can be keywords, phrases, or questions. More specific queries tend to yield more relevant results.
-      num_results:
-        type: integer
-        description: The number of search results to return. Higher values provide more comprehensive results but may increase processing time. Values typically range from 1 to 50.
-        default: 5
-      language:
-        type: string
-        description: The language code for the search results (e.g., "en" for English, "es" for Spanish). This affects both the language of the search results and potentially the regional focus of the search.
-        default: "en"
-      safe_search:
-        type: boolean
-        description: When true, excludes explicit or adult content from the search results. Set to false only when searching for content that may include adult themes.
-        default: true
-      site_restrict:
-        type: string
-        description: Limits the search to a specific website or domain. Use this to focus your search on a particular source. Format should be a domain name, e.g., "wikipedia.org" or "nytimes.com".
-      time_range:
-        type: string
-        description: Filters results to a specific time period. Options typically include "past_day", "past_week", "past_month", "past_year". Leave empty for no time restriction. Useful for finding recent information or historical context.
-    required:
-      - query

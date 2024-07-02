@@ -35,7 +35,7 @@ def gen_cohere(tool):
     tool_def = BaseTool(**tool)
     parameter_definitions = {}
     # print(tool_def)
-    # todo: needs to support all types, and be recursive
+    # todo: needs to support all types, and be recursive, low-pri
     for prop_name in tool_def.parameter_schema['properties']:
         prop = tool_def.parameter_schema['properties'][prop_name]
         one_def = prop.copy()

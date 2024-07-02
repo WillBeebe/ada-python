@@ -89,7 +89,7 @@ class GeminiLLM(LLM):
                 # do we need to count these?
                 # output_tokens += token_client.count_tokens(contents=response.text).total_tokens
 
-            return response
+            return self._translate_response(response)
         except Exception as e:
             logger.exception(f"An error occurred while prompting Gemini: {e}")
             raise e
@@ -129,7 +129,7 @@ class GeminiLLM(LLM):
 
         return response
 
-    def translate_response(
+    def _translate_response(
         self,
         response,
         input_tokens: int = 0,
@@ -138,6 +138,7 @@ class GeminiLLM(LLM):
         try:
             return PromptResponse(
                 content=response.candidates[0].content.parts[0].text,
+                raw_response=response,
                 error={},
                 usage=UsageStats(
                     input_tokens=input_tokens,
@@ -145,7 +146,6 @@ class GeminiLLM(LLM):
                     extra={},
                 ),
             )
-        # todo: should we return an empty PromptResponse from here too? feels like it
         except Exception as e:
             logger.exception(f"An error occurred while translating response: {e}")
             raise e

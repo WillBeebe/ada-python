@@ -63,7 +63,7 @@ class OllamaLLM(LLM):
               # todo
               # system=self.system_prompt
               )
-          return response
+          return self._translate_response(response)
       except Exception as e:
           logger.exception(f"An error occurred while prompting Ollama: {e}")
           raise e
@@ -83,11 +83,12 @@ class OllamaLLM(LLM):
 
         # return response, tool_message
 
-    def translate_response(self, response) -> PromptResponse:
+    def _translate_response(self, response) -> PromptResponse:
       try:
           res = OllamaResponse.model_validate(response)
           return PromptResponse(
               content=res.message.content,
+              raw_response=response,
               error={},
               usage=UsageStats(
                   input_tokens= res.prompt_eval_count,

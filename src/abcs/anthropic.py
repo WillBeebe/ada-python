@@ -36,7 +36,7 @@ class AnthropicLLM(LLM):
             raise ValueError("ToolManager is not set.")
         name = tool_msg.name
         arguments = tool_msg.input
-        print(arguments)
+        logger.debug(arguments)
         return self.tool_manager.call_tool(name, arguments)
 
     def generate_text(
@@ -47,11 +47,7 @@ class AnthropicLLM(LLM):
         **kwargs,
     ) -> PromptResponse:
         combined_history = past_messages + [{"role": "user", "content": prompt}]
-        print(combined_history)
-        print(len(combined_history))
-        # if self.system_prompt:
-        #     combined_history.insert(0, {"role": "system", "content": self.system_prompt})
-        print(f"system prompt {self.system_prompt}")
+        logger.debug(combined_history)
 
         try:
             response = self.client.messages.create(
@@ -68,7 +64,7 @@ class AnthropicLLM(LLM):
                 tool_msg = None
                 while response.stop_reason == "tool_use":
                     total_times += 1
-                    print(f"total tool use: {total_times}")
+                    logger.debug(f"total tool use: {total_times}")
                     # tool_msg = next((msg for msg in response.content if msg.type == "tool_use"), None)
                     # can't rely on this long-term
                     for msg in response.content:
@@ -82,8 +78,7 @@ class AnthropicLLM(LLM):
                         tools,
                     )
                     combined_history = total_history + [tool_message]
-            return response
-            # return self.translate_response(response)
+            return self._translate_response(response)
         except anthropic.APIError as e:
             logger.error(f"Anthropic API error: {e}")
             raise e
@@ -127,7 +122,7 @@ class AnthropicLLM(LLM):
         )
         return response, tool_message
 
-    def translate_response(self, response) -> PromptResponse:
+    def _translate_response(self, response) -> PromptResponse:
         try:
             content = ""
             if isinstance(response, str):
@@ -145,7 +140,5 @@ class AnthropicLLM(LLM):
                 ),
             )
         except Exception as e:
-            # check what exec_info is
-            # logger.error("An error occurred while translating OpenAI response: %s", e, exc_info=True)
             logger.exception(f"error: {e}\nresponse: {response}")
             raise e

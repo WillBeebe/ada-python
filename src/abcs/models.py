@@ -8,6 +8,7 @@ class UsageStats(BaseModel):
 
 class PromptResponse(BaseModel):
     content: str
+    raw_response: any
     error: object
     usage: UsageStats
 

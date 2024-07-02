@@ -1,17 +1,15 @@
 import os
 import sys
 from abc import ABC, abstractmethod
-
-# Add the project root to the Python path
-project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
-sys.path.insert(0, project_root)
-
 from importlib import resources
 
 import yaml
 from abcs.models import PromptResponse
 from abcs.tools import gen_anthropic, gen_cohere, gen_google, gen_openai
 
+# Add the project root to the Python path
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.insert(0, project_root)
 
 class LLM(ABC):
     def __init__(self, client, model, tool_manager, system_prompt: str, provider: str= "", storage_manager: any=None):
@@ -41,12 +39,12 @@ class LLM(ABC):
         pass
 
     @abstractmethod
-    def translate_response(self, response) -> PromptResponse:
-        """Calls a specific tool with the given arguments and returns the response."""
+    def _translate_response(self, response) -> PromptResponse:
+        """Translates the provider response to a common interface"""
         pass
 
     def store_message(self, tool_msg) -> str:
-        """Calls a specific tool with the given arguments and returns the response."""
+        """Stores a message."""
 
     def load_tool_definitions(self):
         tool_definitions = []
@@ -64,7 +62,8 @@ class LLM(ABC):
                         tool_definitions.append(gen_openai(tool))
                     elif self.provider == "google":
                         tool_definitions.append(gen_google(tool))
-                    # handle ollama
+                    elif self.provider == "ollama":
+                        pass
                     else:
                         raise('unrecognized provider')
         return tool_definitions

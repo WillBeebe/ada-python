@@ -9,8 +9,7 @@ from abcs.models import PromptResponse, UsageStats
 from openai import OpenAI
 from tools.tool_manager import ToolManager
 
-# Configure logging
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class ToolResponse:
@@ -58,7 +57,7 @@ class OpenAILLM(LLM):
         past_messages: List[Dict[str, str]],
         tools: Optional[List[Dict[str, Any]]] = None,
         **kwargs,
-    ) -> str:
+    ) -> PromptResponse:
         system_message = [{"role": "system", "content": self.system_prompt}] if self.system_prompt else []
         combined_history = system_message + past_messages + [{"role": "user", "content": prompt}]
         logger.debug("Generating text with prompt: '%s'", prompt)
@@ -92,11 +91,12 @@ class OpenAILLM(LLM):
                                 }
                             })
                         raw_content['tool_calls'] = tool_calls
-                        print(choice.message)
-                        print(raw_content)
+                        logger.debug(choice.message)
+                        logger.debug(raw_content)
                         msg = ToolResponse(role=choice.message.role,content=choice.message.content,content_raw=raw_content)
                         self.storage_manager.store_raw(msg)
-                # for openai all tool calls need to be done first
+                # for openai all tool calls need to be done first, before any messages are stored
+                # todo: update call_tool method with this logic
                 all_history = combined_history + [choice.message]
                 for tool_msg in choice.message.tool_calls:
                     total_tool_calls += 1
@@ -112,26 +112,21 @@ class OpenAILLM(LLM):
                     if self.storage_manager is not None:
                         msg = ToolResponse(role=tool_response_message['role'],content=tool_response_message['content'],content_raw=tool_response_message)
                         self.storage_manager.store_raw(msg)
-                    else:
-                        print('none\n'*10)
                     all_history.append(tool_response_message)
 
                 logger.info(f"post tool calls, number of calls: {total_tool_calls}")
-                # print('\n'*10)
-                # print(pprint(all_history))
-                # print('\n'*10)
                 response = self.client.chat.completions.create(
                     model=self.model,
                     messages=all_history,
                     # might be able to remove
                     # tools=tools,
                 )
-            return response
+            return self._translate_response(response)
         except Exception as e:
             logger.error("Error generating text: %s", e, exc_info=True)
             raise e
 
-    # not currently used, needs to be refactored to remove the completions call
+    # not currently used, needs to be refactored with the logic above remove the completions call
     def call_tool(
         self,
         past_messages: List[Dict[str, str]],
@@ -170,13 +165,14 @@ class OpenAILLM(LLM):
             logger.error("Error during tool response creation: %s", e, exc_info=True)
             raise e
 
-    def translate_response(self, response) -> PromptResponse:
+    def _translate_response(self, response) -> PromptResponse:
         try:
             content = response.choices[0].message.content
             if content is None:
                 content = "done"
             return PromptResponse(
                 content=content,
+                raw_response=response,
                 error={},
                 usage=UsageStats(
                     input_tokens=response.usage.prompt_tokens,
