@@ -1,0 +1,23 @@
+{
+  "name": "getCurrentWeather",
+  "description": "Get the weather in location",
+  "parameters": {
+    "type": "OBJECT",
+    "properties": {
+      "city": {
+        "type": "string",
+        "description": "The city e.g. San Francisco"
+      },
+      "state": {
+        "type": "string",
+        "description": "The state e.g. California"
+      },
+      "unit": {
+        "type": "string",
+        "description": "The temperature unit to use",
+        "enum": ["c", "f"]
+      }
+    },
+    "required": ["city", "state", "unit"]
+  }
+}

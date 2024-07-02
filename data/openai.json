@@ -1,0 +1,53 @@
+[
+  {
+    "type": "function",
+    "function": {
+      "name": "get_weather",
+      "description": "Get the current weather in a given location. If the unit isn't specified, use f.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "city": {
+            "type": "string",
+            "description": "The city e.g. San Francisco"
+          },
+          "state": {
+            "type": "string",
+            "description": "The state e.g. California"
+          },
+          "units": {
+            "type": "string",
+            "description": "The temperature unit to use",
+            "enum": ["c", "f"]
+          }
+        },
+        "required": ["city", "state", "units"]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "update_file",
+      "description": "Can update local files when asked.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The file name of the file to update"
+          },
+          "path": {
+            "type": "string",
+            "description": "The file path of the file to update"
+          },
+          "content": {
+            "type": "string",
+            "description": "The content to write to the file"
+          }
+        },
+        "required": ["name", "path", "content"]
+      }
+    }
+  }
+]

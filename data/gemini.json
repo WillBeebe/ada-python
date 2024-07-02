@@ -1,0 +1,27 @@
+{
+  "function_declarations": [
+    {
+      "name": "get_weather",
+      "description": "Get the current weather in a given location. If the unit isn't specified, use f.",
+      "parameters": {
+        "type": "OBJECT",
+        "properties": {
+          "city": {
+            "type": "string",
+            "description": "The city e.g. San Francisco"
+          },
+          "state": {
+            "type": "string",
+            "description": "The state e.g. California"
+          },
+          "units": {
+            "type": "string",
+            "description": "The temperature unit to use",
+            "enum": ["c", "f"]
+          }
+        },
+        "required": ["city", "state", "units"]
+      }
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+[
+  {
+    "name": "get_weather",
+    "description": "Get the current weather in a given location. If the unit isn't specified, use f.",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "city": {
+          "type": "string",
+          "description": "The city e.g. San Francisco"
+        },
+        "state": {
+          "type": "string",
+          "description": "The state e.g. California"
+        },
+        "units": {
+          "type": "string",
+          "description": "The temperature unit to use",
+          "enum": ["c", "f"]
+        }
+      },
+      "required": ["city", "state", "units"]
+    }
+  },
+  {
+    "name": "update_file",
+    "description": "Write information to a file",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "The filepath of the file"
+        },
+        "content": {
+          "type": "string",
+          "description": "The desired contents of the file"
+        }
+      },
+      "required": ["path", "content"]
+    }
+  },
+  {
+    "name": "install_npm_package",
+    "description": "Install an npm package. Think about if the package is normally a production or development dependency.",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "package": {
+          "type": "string",
+          "description": "The npm package to install"
+        },
+        "development": {
+          "type": "boolean",
+          "description": "Whether or not to save this package as a development package"
+        }
+      },
+      "required": ["package", "development"]
+    }
+  },
+  {
+    "name": "get_current_location",
+    "description": "Gets the current location of the user",
+    "input_schema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  }
+]
