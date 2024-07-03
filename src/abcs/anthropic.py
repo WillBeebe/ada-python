@@ -1,6 +1,5 @@
 import logging
 import os
-from pprint import pprint
 from typing import Any, Dict, List, Optional
 
 import anthropic
@@ -109,7 +108,7 @@ class AnthropicLLM(LLM):
                     ],
                 }
         logger.debug("\n"*20)
-        logger.debug(pprint(past_messages + [tool_message]))
+        logger.debug(f"{past_messages + [tool_message]}")
         logger.debug("\n"*20)
         response = self.client.messages.create(
             model=self.model,

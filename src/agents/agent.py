@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 class Agent(LLM):
     def __init__(self, client, tool_manager: ToolManager, system_prompt: str, tools=[], storage_manager: StorageManager = None):
         self.tools = tools
-        logger.info("Initializing Agent with tools: %s and system prompt: '%s'", tools, system_prompt)
+        logger.debug("Initializing Agent with tools: %s and system prompt: '%s'", tools, system_prompt)
         super().__init__(
             client=client,
             model=None,

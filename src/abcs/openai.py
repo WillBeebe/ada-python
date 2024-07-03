@@ -62,6 +62,9 @@ class OpenAILLM(LLM):
         combined_history = system_message + past_messages + [{"role": "user", "content": prompt}]
         logger.debug("Generating text with prompt: '%s'", prompt)
 
+        if tools is not None and len(tools) == 0:
+            tools = None
+
         try:
             logger.debug('\n'*10)
             logger.debug(combined_history)
@@ -119,7 +122,7 @@ class OpenAILLM(LLM):
                     model=self.model,
                     messages=all_history,
                     # might be able to remove
-                    # tools=tools,
+                    tools=tools,
                 )
             return self._translate_response(response)
         except Exception as e:
