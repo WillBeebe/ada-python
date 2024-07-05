@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ada-python"
-version = "0.2.2"
+version = "0.3.0"
 description = "Ada, making LLMs easier to work with."
 authors = ["Will Beebe"]
 packages = [
