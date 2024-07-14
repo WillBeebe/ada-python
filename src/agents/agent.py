@@ -52,7 +52,8 @@ class Agent(LLM):
             response = self.client.generate_text(prompt, past_messages, self.tools)
         except Exception as e:
             logger.error("Error generating text: %s", e, exc_info=True)
-            # self.storage_manager.remove_last()
+            if self.storage_manager is not None:
+                self.storage_manager.remove_last()
             raise e
 
         if self.storage_manager is not None:
