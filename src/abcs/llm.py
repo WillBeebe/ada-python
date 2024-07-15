@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from importlib import resources
 
 import yaml
-from abcs.models import PromptResponse
+from abcs.models import PromptResponse, StreamingPromptResponse
 from abcs.tools import gen_anthropic, gen_cohere, gen_google, gen_openai
 
 # Add the project root to the Python path
@@ -31,6 +31,15 @@ class LLM(ABC):
                       # this being a string is limiting
                       prompt: str, past_messages, tools, **kwargs) -> PromptResponse:
         """Generates text based on the given prompt and additional arguments."""
+        pass
+
+    @abstractmethod
+    async def generate_text_stream(self,
+                                   prompt: str,
+                                   past_messages,
+                                   tools,
+                                   **kwargs) -> StreamingPromptResponse:
+        """Generates streaming text based on the given prompt and additional arguments."""
         pass
 
     @abstractmethod

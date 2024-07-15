@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, AsyncIterator
 
 from pydantic import BaseModel
 
@@ -29,3 +29,12 @@ class OllamaResponse(BaseModel):
     prompt_eval_duration: int
     eval_count: int
     eval_duration: int
+
+class StreamingPromptResponse(BaseModel):
+    content: AsyncIterator[str]
+    raw_response: Any
+    error: object
+    usage: UsageStats
+
+    class Config:
+        arbitrary_types_allowed = True

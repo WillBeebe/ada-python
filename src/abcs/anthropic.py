@@ -1,10 +1,11 @@
+import asyncio
 import logging
 import os
 from typing import Any, Dict, List, Optional
 
 import anthropic
 from abcs.llm import LLM
-from abcs.models import PromptResponse, UsageStats
+from abcs.models import PromptResponse, StreamingPromptResponse, UsageStats
 from tools.tool_manager import ToolManager
 
 logging.basicConfig(level=logging.INFO)
@@ -142,3 +143,61 @@ class AnthropicLLM(LLM):
         except Exception as e:
             logger.exception(f"error: {e}\nresponse: {response}")
             raise e
+
+    async def generate_text_stream(
+        self,
+        prompt: str,
+        past_messages: List[Dict[str, str]],
+        tools: Optional[List[Dict[str, Any]]] = None,
+        **kwargs,
+    ) -> StreamingPromptResponse:
+        combined_history = past_messages + [{"role": "user", "content": prompt}]
+
+        try:
+            stream = self.client.messages.create(
+                model=self.model,
+                max_tokens=4096,
+                messages=combined_history,
+                system=self.system_prompt,
+                stream=True,
+            )
+
+            async def content_generator():
+                for event in stream:
+                    if isinstance(event, anthropic.types.MessageStartEvent):
+                        # Message start event, we can ignore this
+                        pass
+                    elif isinstance(event, anthropic.types.ContentBlockStartEvent):
+                        # Content block start event, we can ignore this
+                        pass
+                    elif isinstance(event, anthropic.types.ContentBlockDeltaEvent):
+                        # This is the event that contains the actual text
+                        if event.delta.text:
+                            yield event.delta.text
+                    elif isinstance(event, anthropic.types.ContentBlockStopEvent):
+                        # Content block stop event, we can ignore this
+                        pass
+                    elif isinstance(event, anthropic.types.MessageStopEvent):
+                        # Message stop event, we can ignore this
+                        pass
+                    # Small delay to allow for cooperative multitasking
+                    await asyncio.sleep(0)
+
+            return StreamingPromptResponse(
+                content=content_generator(),
+                raw_response=stream,
+                error={},
+                usage=UsageStats(
+                    input_tokens=0,  # These will need to be updated after streaming
+                    output_tokens=0,
+                    extra={},
+                ),
+            )
+        except Exception as e:
+            logger.exception(f"An error occurred while streaming from Claude: {e}")
+            raise e
+
+    async def handle_tool_call(self, tool_calls, combined_history, tools):
+        # This is a placeholder for handling tool calls in streaming context
+        # You'll need to implement the logic to execute the tool call and generate a response
+        pass

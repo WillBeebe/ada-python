@@ -1,7 +1,7 @@
 import logging
 
 from abcs.llm import LLM
-from abcs.models import PromptResponse
+from abcs.models import PromptResponse, StreamingPromptResponse
 
 # from metrics.main import call_tool_counter, generate_text_counter
 from storage.storage_manager import StorageManager
@@ -13,6 +13,8 @@ logger = logging.getLogger(__name__)
 
 class Agent(LLM):
     def __init__(self, client, tool_manager: ToolManager, system_prompt: str = "", tools=[], storage_manager: StorageManager = None):
+        if len(tools) == 0 and (client.provider == "openai" or client.provider == "groq"):
+            tools = None
         self.tools = tools
         logger.debug("Initializing Agent with tools: %s and system prompt: '%s'", tools, system_prompt)
         super().__init__(
@@ -90,3 +92,31 @@ class Agent(LLM):
     #     except Exception as e:
     #         logger.error("Error translating response: %s", e, exc_info=True)
     #         raise e
+
+    async def generate_text_stream(self,
+                                   prompt: str,
+                                   **kwargs) -> StreamingPromptResponse:
+        """Generates streaming text based on the given prompt and additional arguments."""
+        past_messages = []
+        if self.storage_manager is not None:
+            past_messages = self.storage_manager.get_past_messages()
+            logger.debug("Fetched %d past messages", len(past_messages))
+        if self.storage_manager is not None:
+            self.storage_manager.store_message("user", prompt)
+        try:
+            response = await self.client.generate_text_stream(prompt, past_messages, self.tools)
+        except Exception as err:
+            if self.storage_manager is not None:
+                self.storage_manager.remove_last()
+            raise err
+
+        # TODO: can't do this with streaming. have to handle this in the API
+        # if self.storage_manager is not None:
+        #     try:
+        #         # translated = self._translate_response(response)
+        #         self.storage_manager.store_message("assistant", response.content)
+        #     except Exception as e:
+        #         logger.error("Error storing messages: %s", e, exc_info=True)
+        #         raise e
+
+        return response

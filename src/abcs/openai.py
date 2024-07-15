@@ -1,11 +1,14 @@
+import asyncio
 import json
 import logging
 import os
 from typing import Any, Dict, List, Optional
 
-import openai_multi_tool_use_parallel_patch  # type: ignore  # noqa: F401
+# todo: need to support this for multi tool use, maybe upstream package has it fixed now.
+# commented out because it's not working with streams
+# import openai_multi_tool_use_parallel_patch  # type: ignore  # noqa: F401
 from abcs.llm import LLM
-from abcs.models import PromptResponse, UsageStats
+from abcs.models import PromptResponse, StreamingPromptResponse, UsageStats
 from openai import OpenAI
 from tools.tool_manager import ToolManager
 
@@ -188,3 +191,59 @@ class OpenAILLM(LLM):
             # logger.error("An error occurred while translating OpenAI response: %s", e, exc_info=True)
             logger.exception(f"error: {e}\nresponse: {response}")
             raise e
+
+    # https://cookbook.openai.com/examples/how_to_stream_completions
+    async def generate_text_stream(
+        self,
+        prompt: str,
+        past_messages: List[Dict[str, str]],
+        tools: Optional[List[Dict[str, Any]]] = None,
+        **kwargs,
+    ) -> StreamingPromptResponse:
+        system_message = [{"role": "system", "content": self.system_prompt}] if self.system_prompt else []
+        combined_history = system_message + past_messages + [{"role": "user", "content": prompt}]
+
+        try:
+            stream = self.client.chat.completions.create(
+                model=self.model,
+                messages=combined_history,
+                tools=tools,
+                stream=True,
+            )
+
+            async def content_generator():
+                for event in stream:
+                    # print("HERE\n"*30)
+                    # print(event)
+                    if event.choices[0].delta.content is not None:
+                        yield event.choices[0].delta.content
+                    # Small delay to allow for cooperative multitasking
+                    await asyncio.sleep(0)
+
+                # # After the stream is complete, you might want to handle tool calls here
+                # # This is a simplification and may need to be adjusted based on your needs
+                # if tools and collected_content.strip().startswith('{"function":'):
+                #     # Handle tool calls (simplified example)
+                #     tool_response = await self.handle_tool_call(collected_content, combined_history, tools)
+                #     yield tool_response
+
+            return StreamingPromptResponse(
+                content=content_generator(),
+                raw_response=stream,
+                error={},
+                usage=UsageStats(
+                    input_tokens=0,  # These will need to be updated after streaming
+                    output_tokens=0,
+                    extra={},
+                ),
+            )
+        except Exception as e:
+            logger.error("Error generating text stream: %s", e, exc_info=True)
+            raise e
+
+    async def handle_tool_call(self, collected_content, combined_history, tools):
+        # This is a placeholder for handling tool calls in streaming context
+        # You'll need to implement the logic to parse the tool call, execute it,
+        # and generate a response based on the tool's output
+        # This might involve breaking the streaming and making a new API call
+        pass
