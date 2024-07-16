@@ -198,6 +198,4 @@ class AnthropicLLM(LLM):
             raise e
 
     async def handle_tool_call(self, tool_calls, combined_history, tools):
-        # This is a placeholder for handling tool calls in streaming context
-        # You'll need to implement the logic to execute the tool call and generate a response
         pass

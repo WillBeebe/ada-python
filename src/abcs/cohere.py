@@ -1,8 +1,10 @@
+import asyncio
 import logging
+from typing import Any, Dict, List, Optional
 
 import cohere
 from abcs.llm import LLM
-from abcs.models import PromptResponse, UsageStats
+from abcs.models import PromptResponse, StreamingPromptResponse, UsageStats
 from tools.tool_manager import ToolManager
 
 logging.basicConfig(level=logging.INFO)
@@ -121,3 +123,75 @@ class CohereLLM(LLM):
             )
             raise e
 
+    # https://github.com/cohere-ai/cohere-python/blob/main/src/cohere/types/streamed_chat_response.py
+    # https://docs.cohere.com/docs/streaming#stream-events
+    # https://docs.cohere.com/docs/streaming#example-responses
+    async def generate_text_stream(
+        self,
+        prompt: str,
+        past_messages: List[Dict[str, str]],
+        tools: Optional[List[Dict[str, Any]]] = None,
+        **kwargs,
+    ) -> StreamingPromptResponse:
+        combined_history = past_messages + [{"role": "user", "content": prompt}]
+
+        try:
+            combined_history = []
+            for msg in past_messages:
+              combined_history.append({
+                  "role": 'CHATBOT' if msg['role'] == 'assistant' else 'USER',
+                  "message": msg['content'],
+              })
+            stream = self.client.chat_stream(
+              chat_history=combined_history,
+              message=prompt,
+              tools=tools,
+              model=self.model,
+              # perform web search before answering the question. You can also use your own custom connector.
+              # connectors=[{"id": "web-search"}],
+            )
+
+            async def content_generator():
+                for event in stream:
+                    if isinstance(event, cohere.types.StreamedChatResponse_StreamStart):
+                        # Message start event, we can ignore this
+                        pass
+                    elif isinstance(event, cohere.types.StreamedChatResponse_TextGeneration):
+                        # This is the event that contains the actual text
+                        if event.text:
+                            yield event.text
+                    elif isinstance(event, cohere.types.StreamedChatResponse_ToolCallsGeneration):
+                        # todo: call tool
+                        pass
+                    elif isinstance(event, cohere.types.StreamedChatResponse_CitationGeneration):
+                        # todo: not sure, but seems useful
+                        pass
+                    elif isinstance(event, cohere.types.StreamedChatResponse_ToolCallsChunk):
+                        # todo: tool response
+                        pass
+                    elif isinstance(event, cohere.types.StreamedChatResponse_SearchQueriesGeneration):
+                        pass
+                    elif isinstance(event, cohere.types.StreamedChatResponse_SearchResults):
+                        pass
+                    elif isinstance(event, cohere.types.StreamedChatResponse_StreamEnd):
+                        # Message stop event, we can ignore this
+                        pass
+                    # Small delay to allow for cooperative multitasking
+                    await asyncio.sleep(0)
+
+            return StreamingPromptResponse(
+                content=content_generator(),
+                raw_response=stream,
+                error={},
+                usage=UsageStats(
+                    input_tokens=0,  # These will need to be updated after streaming
+                    output_tokens=0,
+                    extra={},
+                ),
+            )
+        except Exception as e:
+            logger.exception(f"An error occurred while streaming from Claude: {e}")
+            raise e
+
+    async def handle_tool_call(self, tool_calls, combined_history, tools):
+        pass

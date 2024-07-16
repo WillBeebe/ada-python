@@ -242,8 +242,4 @@ class OpenAILLM(LLM):
             raise e
 
     async def handle_tool_call(self, collected_content, combined_history, tools):
-        # This is a placeholder for handling tool calls in streaming context
-        # You'll need to implement the logic to parse the tool call, execute it,
-        # and generate a response based on the tool's output
-        # This might involve breaking the streaming and making a new API call
         pass

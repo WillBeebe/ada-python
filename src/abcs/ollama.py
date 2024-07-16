@@ -1,9 +1,15 @@
+import asyncio
 import logging
 import os
 from typing import Any, Dict, List, Optional
 
 from abcs.llm import LLM
-from abcs.models import OllamaResponse, PromptResponse, UsageStats
+from abcs.models import (
+    OllamaResponse,
+    PromptResponse,
+    StreamingPromptResponse,
+    UsageStats,
+)
 from ollama import Client
 from tools.tool_manager import ToolManager
 
@@ -110,3 +116,59 @@ class OllamaLLM(LLM):
       except Exception as e:
           logger.exception(f"An error occurred while translating Ollama response: {e}")
           raise e
+
+    async def generate_text_stream(
+        self,
+        prompt: str,
+        past_messages: List[Dict[str, str]],
+        tools: Optional[List[Dict[str, Any]]] = None,
+        **kwargs,
+    ) -> StreamingPromptResponse:
+        combined_history = past_messages + [{"role": "user", "content": prompt}]
+
+        try:
+            combined_history = past_messages
+            combined_history.append(
+                {
+                    "role": "user",
+                    "content": prompt,
+                }
+            )
+            # https://github.com/ollama/ollama-python
+            # client = Client(host="https://120d-2606-40-15c-13ba-00-460-7bae.ngrok-free.app",)
+
+            # todo: generate vs chat
+            # https://github.com/ollama/ollama/blob/main/docs/api.md#generate-a-completion
+            stream = self.client.chat(
+                model=self.model,
+                messages=combined_history,
+                stream=True,
+                # num_predict=4000
+                # todo
+                # system=self.system_prompt
+                )
+
+
+            async def content_generator():
+                for chunk in stream:
+                    if chunk['message']['content']:
+                        yield chunk['message']['content']
+                    # Small delay to allow for cooperative multitasking
+                    await asyncio.sleep(0)
+
+            return StreamingPromptResponse(
+                content=content_generator(),
+                raw_response=stream,
+                error={},
+                usage=UsageStats(
+                    input_tokens=0,  # These will need to be updated after streaming
+                    output_tokens=0,
+                    extra={},
+                ),
+            )
+        except Exception as e:
+            logger.exception(f"An error occurred while streaming from Claude: {e}")
+            raise e
+
+    async def handle_tool_call(self, tool_calls, combined_history, tools):
+        pass
