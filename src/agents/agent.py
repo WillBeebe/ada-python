@@ -55,7 +55,7 @@ class Agent(LLM):
         except Exception as e:
             logger.error("Error generating text: %s", e, exc_info=True)
             if self.storage_manager is not None:
-                self.storage_manager.remove_last()
+                await self.storage_manager.remove_last()
             raise e
 
         if self.storage_manager is not None:
@@ -99,15 +99,15 @@ class Agent(LLM):
         """Generates streaming text based on the given prompt and additional arguments."""
         past_messages = []
         if self.storage_manager is not None:
-            past_messages = self.storage_manager.get_past_messages()
+            past_messages = await self.storage_manager.get_past_messages()
             logger.debug("Fetched %d past messages", len(past_messages))
         if self.storage_manager is not None:
-            self.storage_manager.store_message("user", prompt)
+            await self.storage_manager.store_message("user", prompt)
         try:
             response = await self.client.generate_text_stream(prompt, past_messages, self.tools)
         except Exception as err:
             if self.storage_manager is not None:
-                self.storage_manager.remove_last()
+                await self.storage_manager.remove_last()
             raise err
 
         # TODO: can't do this with streaming. have to handle this in the API
