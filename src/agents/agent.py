@@ -34,7 +34,7 @@ class Agent(LLM):
         logger.debug("No storage manager found, returning empty history")
         return []
 
-    def generate_text(self, prompt: str) -> PromptResponse:
+    async def generate_text(self, prompt: str) -> PromptResponse:
         # generate_text_counter.add(1)
         logger.debug("Generating text for prompt: '%s'", prompt)
         past_messages = []
@@ -43,14 +43,14 @@ class Agent(LLM):
             # if self.storage_manager.get_past_messages_callback is not None:
             #     past_messages = self.storage_manager.get_past_messages_callback()
             # else:
-            past_messages = self.storage_manager.get_past_messages()
+            past_messages = await self.storage_manager.get_past_messages()
             logger.debug("Fetched %d past messages", len(past_messages))
         # todo: push down to core llm class, leave for now while scripting
 
         try:
             logger.debug("passing %d past messages", len(past_messages))
             if self.storage_manager is not None:
-                self.storage_manager.store_message("user", prompt)
+                await self.storage_manager.store_message("user", prompt)
             response = self.client.generate_text(prompt, past_messages, self.tools)
         except Exception as e:
             logger.error("Error generating text: %s", e, exc_info=True)
@@ -61,7 +61,7 @@ class Agent(LLM):
         if self.storage_manager is not None:
             try:
                 # translated = self._translate_response(response)
-                self.storage_manager.store_message("assistant", response.content)
+                await self.storage_manager.store_message("assistant", response.content)
             except Exception as e:
                 logger.error("Error storing messages: %s", e, exc_info=True)
                 raise e
