@@ -28,3 +28,41 @@
 ## Session handoff
 
 When finishing work, leave: what changed, how to run tests (`make test` / `poetry run pytest`), and any env vars needed (provider API keys). Argus and the owner should be able to resume without re-reading the whole codebase.
+
+---
+
+## Shared knowledge wiki (learn + contribute)
+
+Fleet wiki: [container-labs/knowledge](https://github.com/container-labs/knowledge) — LLM-maintained Obsidian vault, distributed as a normal git repo (no vault hosting / sync creds). Schema + ingest/query/lint: that repo's `AGENTS.md`. Catalog: `index.md`.
+
+Argus (`WillBeebe/dog`) also embeds this bootstrap in managed launches. Keep this section so agents opened **directly** (not via `argus launch`) still sync and contribute.
+
+### Sync (session start)
+
+```bash
+KNOWLEDGE="${KNOWLEDGE_DIR:-$HOME/repos/container-labs/knowledge}"
+if [ -x "$KNOWLEDGE/scripts/sync.sh" ]; then
+  bash "$KNOWLEDGE/scripts/sync.sh"
+elif [ -d "$KNOWLEDGE/.git" ]; then
+  git -C "$KNOWLEDGE" pull --ff-only
+else
+  mkdir -p "$(dirname "$KNOWLEDGE")"
+  git clone git@github.com:container-labs/knowledge.git "$KNOWLEDGE"
+fi
+```
+
+Override with `KNOWLEDGE_DIR` / `KNOWLEDGE_REMOTE` if the clone lives elsewhere.
+
+### Learn
+
+Before rediscovering shipping, disk, Flutter/Unity, iOS, or ops gotchas: read `$KNOWLEDGE/index.md`, then the matching `wiki/` notes. Prefer wiki synthesis; fall back to this repo's playbooks for live scripts and state.
+
+### Contribute
+
+When you close a durable learning (bug root cause, shipping gotcha, machine rule, policy):
+
+1. Keep evidence / playbook updates **in this repo** (e.g. `docs/learnings/`) — still SoT for scripts and live state
+2. Ingest into the wiki per `$KNOWLEDGE/AGENTS.md`: update/create notes, domain MOC, `index.md`, pin the source in `sources.md`, append `log.md`
+3. Commit and push **knowledge** on its own (`cd "$KNOWLEDGE" && git push`) — never mix with this repo's commit
+
+Do not put secrets, keys, or `.local/` contents in knowledge. Domain today: `wiki/mobile-dev/` (experiment); expand when the owner opens new domains.
